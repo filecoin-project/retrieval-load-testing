@@ -1,1 +1,1 @@
-FROM grafana/k6gfdgsfdd
+FROM grafana/k6

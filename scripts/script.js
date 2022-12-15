@@ -5,7 +5,10 @@ import { Trend, Rate } from 'k6/metrics'
 
 const pieces = new SharedArray('pieces', function () {
   // here you can open files, and then do additional processing or generate the array with data dynamically
-  const arr = open('/pieces.txt').split(/\r?\n/)
+  const arr = open('../pieces.txt').split(/\r?\n/)
+  if (arr[arr.length - 1] == '') {
+    arr.pop()
+  }
   return arr // f must be an array[]
 })
 
@@ -32,7 +35,7 @@ export const options = {
 
 export default function () {
   // get a random piece from the list
-  const piece = pieces[Math.floor(Math.random() * (pieces.length - 1))]
+  const piece = pieces[Math.floor(Math.random() * pieces.length)]
   // run raw vs boost randomly first
   const runRawFirst = Math.round(Math.random())
   let boostResponse, rawResponse

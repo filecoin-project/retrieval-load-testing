@@ -18,11 +18,12 @@ do
    COMMP="$(echo "$COMMP_OUTPUT" | grep 'CommP CID:' | awk '{split($0,a,":  "); print a[2]}')"
    PIECESIZE="$(echo "$COMMP_OUTPUT" | grep 'Piece size:' | awk '{split($0,a,":  "); print a[2]}')"
    CARFILESIZE="$(echo "$COMMP_OUTPUT" | grep 'Car file size:' | awk '{split($0,a,":  "); print a[2]}')"
-   DEAL_INPUT=(boost offline-deal --verified=false --provider=f01953925 --commp=$COMMP --car-size=$CARFILESIZE --piece-size=$PIECESIZE --payload-cid=$PAYLOAD_CID)
+   DEAL_INPUT=(boost offline-deal --verified=false --provider=$3 --commp=$COMMP --car-size=$CARFILESIZE --piece-size=$PIECESIZE --payload-cid=$PAYLOAD_CID)
    echo "${DEAL_INPUT[@]}"
    DEAL_OUTPUT="$("${DEAL_INPUT[@]}")"
    echo $DEAL_OUTPUT
    UUID="$(echo "$DEAL_OUTPUT" | grep 'deal uuid:' | awk '{split($0,a,": "); print a[2]}')"
    boostd import-data $UUID $1/http32GBtestfile$i.car
+   echo $COMMP >> pieces.txt
 done
    
