@@ -28,19 +28,19 @@ services:
     volumes:
       - ./grafana:/etc/grafana/provisioning/
 
-  k6:
-    image: grafana/k6:latest
+  k6: 
+    build:
+      context: .
+      dockerfile: ${K6_DOCKERFILE}
     networks:
       - k6
     ports:
       - "6565:6565"
     environment:
       - K6_OUT=influxdb=http://influxdb:8086/k6
-      - PIECES_FILE
-      - BOOST_SP_USER
-      - BOOST_SP_PASSWORD
       - SIMULTANEOUS_DOWNLOADS
-      - BOOST_URL
-      - RAW_URL
+      - BOOST_FETCH_URL
+      - RAW_FETCH_URL
     volumes:
       - ./scripts:/scripts
+      - ./pieces.txt:/pieces.txt

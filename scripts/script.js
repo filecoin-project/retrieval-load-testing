@@ -5,7 +5,7 @@ import { Trend, Rate } from 'k6/metrics'
 
 const pieces = new SharedArray('pieces', function () {
   // here you can open files, and then do additional processing or generate the array with data dynamically
-  const arr = open(__ENV.PIECES_FILE).split(/\r?\n/)
+  const arr = open('/pieces.txt').split(/\r?\n/)
   return arr // f must be an array[]
 })
 
@@ -31,9 +31,6 @@ export const options = {
 }
 
 export default function () {
-  const options = {
-    timeout: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`,
-  }
   // get a random piece from the list
   const piece = pieces[Math.floor(Math.random() * (pieces.length - 1))]
   // run raw vs boost randomly first
@@ -45,7 +42,7 @@ export default function () {
         tags: {
           name: 'BoostFetchURL',
         },
-        ...options,
+        timeout: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`,
       })
       timeBoost.add(boostResponse.timings.duration)
       ttfbBoost.add(boostResponse.timings.waiting)
@@ -58,7 +55,7 @@ export default function () {
           tags: {
             name: 'RawFetchURL',
           },
-          ...options,
+          timeout: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`,
         })
         timeRaw.add(rawResponse.timings.duration)
         ttfbRaw.add(rawResponse.timings.waiting)

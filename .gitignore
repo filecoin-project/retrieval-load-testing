@@ -1,3 +1,5 @@
 .env
 pieces.txt
 .vscode
+Dockerfile.custom
+*.crt
