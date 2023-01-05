@@ -71,6 +71,8 @@ performance data in grafana, which will remain running after the load test shuts
 
 Visit: `http://localhost:3000/` and navigate to the `k6 performance test` dashboard.
 
+Alternatively, a load test summary JSON file will also be created in the `/out` directory of the project.
+
 ## Developing Scripts
 
 During development, it might be easier to run scripts without the load testing setup that `loadtest.sh` provides. In this case, you can use the `runscript.sh` command to run any k6 script.
