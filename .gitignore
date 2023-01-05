@@ -1,5 +1,6 @@
 .env
-pieces.txt
+/pieces.txt
 .vscode
 Dockerfile.custom
 *.crt
+/out

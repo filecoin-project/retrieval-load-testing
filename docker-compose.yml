@@ -43,4 +43,6 @@ services:
       - RAW_FETCH_URL
     volumes:
       - ./scripts:/scripts
+      - ./out:/out
       - ./pieces.txt:/pieces.txt
+    user: ${UID}:${GID}
