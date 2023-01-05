@@ -2,6 +2,8 @@
 
 TEST_CONCURRENCIES=(1 8 16 32 64)
 
+mkdir -p out
+
 docker compose up -d influxdb grafana
 for CONCURRENCY in "${TEST_CONCURRENCIES[@]}"
 do

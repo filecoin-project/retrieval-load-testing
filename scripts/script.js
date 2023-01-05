@@ -2,6 +2,7 @@ import http from 'k6/http'
 import { SharedArray } from 'k6/data'
 import encoding from 'k6/encoding'
 import { Trend, Rate } from 'k6/metrics'
+import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js'
 
 const pieces = new SharedArray('pieces', function () {
   // here you can open files, and then do additional processing or generate the array with data dynamically
@@ -70,4 +71,17 @@ export default function () {
     timeDelta.add(boostResponse.timings.duration - rawResponse.timings.duration)
     ttfbDelta.add(boostResponse.timings.waiting - rawResponse.timings.waiting)
   }
+}
+
+const OUT_DIR = "/out";
+const TEST_NAME = "script";
+
+export function handleSummary(data) {
+  const timeStr = dayjs().format("YYYY-MM-DDTHH:mm:ss")
+  const filepath = `/${OUT_DIR}/${TEST_NAME}-${timeStr}.json`;
+
+  return {
+    'stdout': textSummary(data, { indent: "  ", enableColors: true }),
+    [filepath]: JSON.stringify(data, null, 2),
+  };
 }
