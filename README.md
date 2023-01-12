@@ -54,16 +54,16 @@ You will need to edit .env to set at least one of the config options -- the BOOS
 
 ## Load Testing
 
-To run a load test, run:
+To run a load test using the host machine's local k6 runner, run:
 
 ```
 $ ./loadtest.sh
 ```
 
-optionally, if you'd like to run your load test directly on the host machine, you can run
+optionally, if you'd like to run your load test using the docker image, you can run
 
 ```
-$ RAW_LOAD_TEST=1 ./loadtest.sh
+$ USE_DOCKER_K6=1 ./loadtest.sh
 ```
 
 Your load test will display output as it runs. Once it's complete, you can view
