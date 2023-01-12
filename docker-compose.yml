@@ -40,6 +40,7 @@ services:
       - K6_OUT=influxdb=http://influxdb:8086/k6
       - SIMULTANEOUS_DOWNLOADS
       - RANGE_SIZE
+      - TEST_NAME
       - BOOST_FETCH_URL
       - RAW_FETCH_URL
     volumes:

@@ -156,15 +156,22 @@ function getRangeHeaderValue(rangeSize, maxContentSize=34359738368) {
 }
 
 /**
- * Defines a custom K6 summary output configuration
+ * Defines a custom K6 summary output configuration.
+ * Configuration changes based on test name.
  */
-const TEST_NAME = 'script';
 export function handleSummary(data) {
   const timeStr = dayjs().format('YYYY-MM-DDTHH:mm:ss')
-  const filepath = `${__ENV.OUT_DIR}/${TEST_NAME}-${timeStr}.json`;
+  var filepath
+
+  if (__ENV.TEST_NAME === 'full-fetch') {
+    filepath = `${__ENV.OUT_DIR}/${__ENV.TEST_NAME}/${__ENV.SIMULTANEOUS_DOWNLOADS}vu_${timeStr}.json`
+  }
+  else if (__ENV.TEST_NAME === 'range-requests') {
+    filepath = `${__ENV.OUT_DIR}/${__ENV.TEST_NAME}/${__ENV.SIMULTANEOUS_DOWNLOADS}vu_${__ENV.RANGE_SIZE}B_${timeStr}.json`
+  }
 
   return {
     'stdout': textSummary(data, { indent: '  ', enableColors: true }),
     [filepath]: JSON.stringify(data, null, 2),
-  };
+  }
 }
