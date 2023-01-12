@@ -60,54 +60,105 @@ export default function () {
   }
 }
 
+/**
+ * Fetches a piece CID from the BOOST_FETCH_URL
+ * @param {string} piece The piece CID string to fetch
+ * @returns A K6 HTTP response from the BOOST_FETCH_URL (https://k6.io/docs/javascript-api/k6-http/response/)
+ */
 function fetchFromBoost(piece) {
-  let response = http.get(`${__ENV.BOOST_FETCH_URL}${piece}`, {
+  let response = get(`${__ENV.BOOST_FETCH_URL}${piece}`, {
     tags: {
       name: 'BoostFetchURL',
-    },
-    timeout: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`,
+    }
   })
   timeBoost.add(response.timings.duration)
   ttfbBoost.add(response.timings.waiting)
-  boostSuccess.add(
-    response.status >= 200 && response.status < 300
-  )
+  boostSuccess.add(response.status >= 200 && response.status < 300)
 
-  let contentLength = parseInt(response.headers['Content-Length'])
-  dataReceivedBoost.add(contentLength, { url: response.url })
-  bytesPerMsBoost.add(contentLength / response.timings.duration)
+  if (response.headers['Content-Length'] !== undefined) {
+    let contentLength = parseInt(response.headers['Content-Length'], 10)
+    if (!Number.isNaN(contentLength)) {
+      dataReceivedBoost.add(contentLength, { url: response.url })
+      bytesPerMsBoost.add(contentLength / response.timings.duration)
+    }
+  }
 
   return response
 }
 
+/**
+ * Fetches a piece CID from the RAW_FETCH_URL
+ * @param {string} piece The piece CID string to fetch
+ * @returns A K6 HTTP response from the RAW_FETCH_URL (https://k6.io/docs/javascript-api/k6-http/response/)
+ */
 function fetchFromRawUrl(piece) {
   if (__ENV.RAW_FETCH_URL) {
-    let response = http.get(`${__ENV.RAW_FETCH_URL}${piece}`, {
+    let response = get(`${__ENV.RAW_FETCH_URL}${piece}`, {
       tags: {
         name: 'RawFetchURL',
-      },
-      timeout: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`,
+      }
     })
     timeRaw.add(response.timings.duration)
     ttfbRaw.add(response.timings.waiting)
     rawSuccess.add(response.status >= 200 && response.status < 300)
 
-    let contentLength = parseInt(response.headers['Content-Length'])
-    dataReceivedRaw.add(contentLength, { url: response.url })
-    bytesPerMsRaw.add(contentLength / response.timings.duration)
+    if (response.headers['Content-Length'] !== undefined) {
+      let contentLength = parseInt(response.headers['Content-Length'], 10)
+      if (!Number.isNaN(contentLength)) {
+        dataReceivedRaw.add(contentLength, { url: response.url })
+        bytesPerMsRaw.add(contentLength / response.timings.duration)
+      }
+    }
 
     return response
   }
 }
 
-const TEST_NAME = "script";
+/**
+ * Wraps K6 http.get() to provide default and optional request parameters
+ * @param {string} url The url to fetch from
+ * @param {Params} [params] Default K6 request parameters to use. https://k6.io/docs/javascript-api/k6-http/params/
+ * @returns A K6 HTTP response (https://k6.io/docs/javascript-api/k6-http/response/)
+ */
+function get(url, params) {
+  // Ensure params is not undefined
+  if (params === undefined) params = {}
 
+  // Default timeout
+  if(__ENV.SIMULTANEOUS_DOWNLOADS != undefined) {
+    params.timeout = `${__ENV.SIMULTANEOUS_DOWNLOADS}h`
+  }
+
+  // Get random range offset and create Range header
+  if (__ENV.RANGE_SIZE !== undefined) {
+    if (params.headers === undefined) params.headers = {} // Ensure headers are not undefined
+    params.headers['Range'] = getRangeHeaderValue(parseInt(__ENV.RANGE_SIZE, 10))
+  }
+
+  return http.get(`${url}`, params)
+}
+
+/**
+ * Gets a random HTTP Range header byte value of size rangSize within maxContentSize
+ * @param {number} rangeSize The size of the content to fetch in bytes
+ * @param {number} [maxContentSize] The max size of the content in bytes. Defaults to 32GB.
+ * @returns An HTTP Range header byte value
+ */
+function getRangeHeaderValue(rangeSize, maxContentSize=34359738368) {
+  let offset = Math.floor(Math.random() * (maxContentSize - rangeSize)) // We want to make sure the start of our range is within the max content size
+  return `bytes=${offset}-${offset + rangeSize - 1}`
+}
+
+/**
+ * Defines a custom K6 summary output configuration
+ */
+const TEST_NAME = 'script';
 export function handleSummary(data) {
-  const timeStr = dayjs().format("YYYY-MM-DDTHH:mm:ss")
+  const timeStr = dayjs().format('YYYY-MM-DDTHH:mm:ss')
   const filepath = `${__ENV.OUT_DIR}/${TEST_NAME}-${timeStr}.json`;
 
   return {
-    'stdout': textSummary(data, { indent: "  ", enableColors: true }),
+    'stdout': textSummary(data, { indent: '  ', enableColors: true }),
     [filepath]: JSON.stringify(data, null, 2),
   };
 }
