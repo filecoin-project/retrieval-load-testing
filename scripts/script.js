@@ -13,16 +13,16 @@ const pieces = new SharedArray('pieces', function () {
   return arr // f must be an array[]
 })
 
-const bandwidthBoost = new Trend('bandwidth_boost')
-const bandwidthRaw = new Trend('bandwidth_raw')
+const bytesPerMsBoost = new Trend('bytes_per_ms_boost')
+const bytesPerMsRaw = new Trend('bytes_per_ms_raw')
 const dataReceivedBoost = new Counter('data_received_boost')
 const dataReceivedRaw = new Counter('data_received_raw')
-const timeBoost = new Trend('time_boost')
-const timeDelta = new Trend('time_delta')
-const timeRaw = new Trend('time_raw')
-const ttfbBoost = new Trend('ttfb_boost')
-const ttfbDelta = new Trend('ttfb_delta')
-const ttfbRaw = new Trend('ttfb_raw')
+const timeBoost = new Trend('time_boost', true)
+const timeDelta = new Trend('time_delta', true)
+const timeRaw = new Trend('time_raw', true)
+const ttfbBoost = new Trend('ttfb_boost', true)
+const ttfbDelta = new Trend('ttfb_delta', true)
+const ttfbRaw = new Trend('ttfb_raw', true)
 const boostSuccess = new Rate('success_boost')
 const rawSuccess = new Rate('success_raw')
 
@@ -75,7 +75,7 @@ function fetchFromBoost(piece) {
 
   let contentLength = parseInt(response.headers['Content-Length'])
   dataReceivedBoost.add(contentLength, { url: response.url })
-  bandwidthBoost.add(contentLength / response.timings.duration)
+  bytesPerMsBoost.add(contentLength / response.timings.duration)
 
   return response
 }
@@ -94,7 +94,7 @@ function fetchFromRawUrl(piece) {
 
     let contentLength = parseInt(response.headers['Content-Length'])
     dataReceivedRaw.add(contentLength, { url: response.url })
-    bandwidthRaw.add(contentLength / response.timings.duration)
+    bytesPerMsRaw.add(contentLength / response.timings.duration)
 
     return response
   }
