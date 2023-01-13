@@ -1,3 +1,5 @@
+/* global __ENV open */
+
 import http from 'k6/http'
 import { SharedArray } from 'k6/data'
 import { Trend, Rate, Counter } from 'k6/metrics'
@@ -5,12 +7,7 @@ import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.3/index.js'
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js'
 
 const pieces = new SharedArray('pieces', function () {
-  // here you can open files, and then do additional processing or generate the array with data dynamically
-  const arr = open('../pieces.txt').split(/\r?\n/)
-  if (arr[arr.length - 1] == '') {
-    arr.pop()
-  }
-  return arr // f must be an array[]
+  return open('../pieces.txt').split(/\r?\n/).filter(Boolean) // f must be an array[]
 })
 
 const megabytesPerSecBoost = new Trend('megabytes_per_second_boost')
@@ -32,10 +29,10 @@ export const options = {
       executor: 'per-vu-iterations',
       vus: __ENV.SIMULTANEOUS_DOWNLOADS,
       iterations: 1,
-      maxDuration: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`,
-    },
+      maxDuration: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`
+    }
   },
-  discardResponseBodies: true,
+  discardResponseBodies: true
 }
 
 export default function () {
@@ -43,7 +40,7 @@ export default function () {
   const piece = pieces[Math.floor(Math.random() * pieces.length)]
 
   // randomly fetch first from either a raw url or boost
-  const fetchRawUrlFirst = Math.random() >= .5
+  const fetchRawUrlFirst = Math.random() >= 0.5
   let boostResponse, rawResponse
 
   if (fetchRawUrlFirst) {
@@ -65,10 +62,10 @@ export default function () {
  * @param {string} piece The piece CID string to fetch
  * @returns A K6 HTTP response from the BOOST_FETCH_URL (https://k6.io/docs/javascript-api/k6-http/response/)
  */
-function fetchFromBoost(piece) {
-  let response = get(`${__ENV.BOOST_FETCH_URL}${piece}`, {
+function fetchFromBoost (piece) {
+  const response = get(`${__ENV.BOOST_FETCH_URL}${piece}`, {
     tags: {
-      name: 'BoostFetchURL',
+      name: 'BoostFetchURL'
     }
   })
   timeBoost.add(response.timings.duration)
@@ -76,13 +73,13 @@ function fetchFromBoost(piece) {
   boostSuccess.add(response.status >= 200 && response.status < 300)
 
   if (response.headers['Content-Length'] !== undefined) {
-    let contentLength = parseInt(response.headers['Content-Length'], 10)
+    const contentLength = parseInt(response.headers['Content-Length'], 10)
     if (!Number.isNaN(contentLength)) {
       dataReceivedBoost.add(contentLength, { url: response.url })
 
-      let megabytes = contentLength / 1048576
-      let seconds = response.timings.duration / 1000
-      megabytesPerSecBoost.add(megabytes / second)
+      const megabytes = contentLength / 1048576
+      const seconds = response.timings.duration / 1000
+      megabytesPerSecBoost.add(megabytes / seconds)
     }
   }
 
@@ -94,11 +91,11 @@ function fetchFromBoost(piece) {
  * @param {string} piece The piece CID string to fetch
  * @returns A K6 HTTP response from the RAW_FETCH_URL (https://k6.io/docs/javascript-api/k6-http/response/)
  */
-function fetchFromRawUrl(piece) {
+function fetchFromRawUrl (piece) {
   if (__ENV.RAW_FETCH_URL) {
-    let response = get(`${__ENV.RAW_FETCH_URL}${piece}`, {
+    const response = get(`${__ENV.RAW_FETCH_URL}${piece}`, {
       tags: {
-        name: 'RawFetchURL',
+        name: 'RawFetchURL'
       }
     })
     timeRaw.add(response.timings.duration)
@@ -106,12 +103,12 @@ function fetchFromRawUrl(piece) {
     rawSuccess.add(response.status >= 200 && response.status < 300)
 
     if (response.headers['Content-Length'] !== undefined) {
-      let contentLength = parseInt(response.headers['Content-Length'], 10)
+      const contentLength = parseInt(response.headers['Content-Length'], 10)
       if (!Number.isNaN(contentLength)) {
         dataReceivedRaw.add(contentLength, { url: response.url })
 
-        let megabytes = contentLength / 1048576
-        let seconds = response.timings.duration / 1000
+        const megabytes = contentLength / 1048576
+        const seconds = response.timings.duration / 1000
         megabytesPerSecRaw.add(megabytes / seconds)
       }
     }
@@ -126,19 +123,16 @@ function fetchFromRawUrl(piece) {
  * @param {Params} [params] Default K6 request parameters to use. https://k6.io/docs/javascript-api/k6-http/params/
  * @returns A K6 HTTP response (https://k6.io/docs/javascript-api/k6-http/response/)
  */
-function get(url, params) {
-  // Ensure params is not undefined
-  if (params === undefined) params = {}
-
+function get (url, params = {}) {
   // Default timeout
-  if(__ENV.SIMULTANEOUS_DOWNLOADS != undefined) {
+  if (__ENV.SIMULTANEOUS_DOWNLOADS) {
     params.timeout = `${__ENV.SIMULTANEOUS_DOWNLOADS}h`
   }
 
   // Get random range offset and create Range header
-  if (__ENV.RANGE_SIZE !== undefined) {
-    if (params.headers === undefined) params.headers = {} // Ensure headers are not undefined
-    params.headers['Range'] = getRangeHeaderValue(parseInt(__ENV.RANGE_SIZE, 10))
+  if (__ENV.RANGE_SIZE) {
+    if (!params.headers) params.headers = {} // Ensure headers are not undefined
+    params.headers.Range = getRangeHeaderValue(parseInt(__ENV.RANGE_SIZE, 10))
   }
 
   return http.get(`${url}`, params)
@@ -150,8 +144,8 @@ function get(url, params) {
  * @param {number} [maxContentSize] The max size of the content in bytes. Defaults to 32GB.
  * @returns An HTTP Range header byte value
  */
-function getRangeHeaderValue(rangeSize, maxContentSize=34359738368) {
-  let offset = Math.floor(Math.random() * (maxContentSize - rangeSize)) // We want to make sure the start of our range is within the max content size
+function getRangeHeaderValue (rangeSize, maxContentSize = 34359738368) {
+  const offset = Math.floor(Math.random() * (maxContentSize - rangeSize)) // We want to make sure the start of our range is within the max content size
   return `bytes=${offset}-${offset + rangeSize - 1}`
 }
 
@@ -159,19 +153,17 @@ function getRangeHeaderValue(rangeSize, maxContentSize=34359738368) {
  * Defines a custom K6 summary output configuration.
  * Configuration changes based on test name.
  */
-export function handleSummary(data) {
+export function handleSummary (data) {
   const timeStr = dayjs().format('YYYY-MM-DDTHH:mm:ss')
-  var filepath
-
-  if (__ENV.TEST_NAME === 'full-fetch') {
-    filepath = `${__ENV.OUT_DIR}/${__ENV.TEST_NAME}/${__ENV.SIMULTANEOUS_DOWNLOADS}vu_${timeStr}.json`
-  }
-  else if (__ENV.TEST_NAME === 'range-requests') {
-    filepath = `${__ENV.OUT_DIR}/${__ENV.TEST_NAME}/${__ENV.SIMULTANEOUS_DOWNLOADS}vu_${__ENV.RANGE_SIZE}B_${timeStr}.json`
-  }
+  const dir = __ENV.OUT_DIR
+  const name = __ENV.TEST_NAME
+  const concurrency = __ENV.SIMULTANEOUS_DOWNLOADS
+  const range = __ENV.RANGE_SIZE
+  const rangePart = name === 'range-requests' ? `${range}B_` : ''
+  const filepath = `${dir}/${name}/${concurrency}vu_${rangePart}${timeStr}.json`
 
   return {
-    'stdout': textSummary(data, { indent: '  ', enableColors: true }) + '\n',
-    [filepath]: JSON.stringify(data, null, 2),
+    stdout: textSummary(data, { indent: '  ', enableColors: true }) + '\n',
+    [filepath]: JSON.stringify(data, null, 2)
   }
 }
