@@ -13,8 +13,8 @@ const pieces = new SharedArray('pieces', function () {
   return arr // f must be an array[]
 })
 
-const bytesPerMsBoost = new Trend('bytes_per_ms_boost')
-const bytesPerMsRaw = new Trend('bytes_per_ms_raw')
+const megabytesPerSecBoost = new Trend('megabytes_per_second_boost')
+const megabytesPerSecRaw = new Trend('megabytes_per_second_raw')
 const dataReceivedBoost = new Counter('data_received_boost')
 const dataReceivedRaw = new Counter('data_received_raw')
 const timeBoost = new Trend('time_boost', true)
@@ -79,7 +79,10 @@ function fetchFromBoost(piece) {
     let contentLength = parseInt(response.headers['Content-Length'], 10)
     if (!Number.isNaN(contentLength)) {
       dataReceivedBoost.add(contentLength, { url: response.url })
-      bytesPerMsBoost.add(contentLength / response.timings.duration)
+
+      let megabytes = contentLength / 1048576
+      let seconds = response.timings.duration / 1000
+      megabytesPerSecBoost.add(megabytes / second)
     }
   }
 
@@ -106,7 +109,10 @@ function fetchFromRawUrl(piece) {
       let contentLength = parseInt(response.headers['Content-Length'], 10)
       if (!Number.isNaN(contentLength)) {
         dataReceivedRaw.add(contentLength, { url: response.url })
-        bytesPerMsRaw.add(contentLength / response.timings.duration)
+
+        let megabytes = contentLength / 1048576
+        let seconds = response.timings.duration / 1000
+        megabytesPerSecRaw.add(megabytes / seconds)
       }
     }
 
