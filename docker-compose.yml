@@ -41,6 +41,7 @@ services:
       - SIMULTANEOUS_DOWNLOADS
       - RANGE_SIZE
       - TEST_NAME
+      - OUT_DIR
       - BOOST_FETCH_URL
       - RAW_FETCH_URL
     volumes:
