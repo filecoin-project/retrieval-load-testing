@@ -44,6 +44,7 @@ services:
       - OUT_DIR
       - BOOST_FETCH_URL
       - RAW_FETCH_URL
+      - FILE_TIME_STR
     volumes:
       - ./scripts:/scripts
       - ./out:/out

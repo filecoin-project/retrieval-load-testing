@@ -4,7 +4,6 @@ import http from 'k6/http'
 import { SharedArray } from 'k6/data'
 import { Trend, Rate, Counter } from 'k6/metrics'
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.3/index.js'
-import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js'
 
 const pieces = new SharedArray('pieces', function () {
   return open('../pieces.txt').split(/\r?\n/).filter(Boolean) // f must be an array[]
@@ -154,7 +153,7 @@ function getRangeHeaderValue (rangeSize, maxContentSize = 34359738368) {
  * Configuration changes based on test name.
  */
 export function handleSummary (data) {
-  const timeStr = dayjs().format('YYYY-MM-DDTHH:mm:ss')
+  const timeStr = __ENV.FILE_TIME_STR || new Date().toISOString()
   const dir = __ENV.OUT_DIR
   const name = __ENV.TEST_NAME
   const concurrency = __ENV.SIMULTANEOUS_DOWNLOADS
