@@ -15,7 +15,8 @@
 DEFAULT_FULL_FETCH_CONCURRENCIES=(1 8 16 32 64)
 DEFAULT_RANGE_CONCURRENCIES=(10 100 1000)
 DEFAULT_RANGE_SIZES=(1048576 10485760 104857600)
-CSV_OUT_FILE=${CSV_OUT_FILE:-out/results.csv}
+FILE_TIME_STR=$(date -u +'%Y-%m-%dT%H:%M')
+CSV_OUT_FILE=${CSV_OUT_FILE:-out/results_${FILE_TIME_STR}.csv}
 
 # Check that we have Node.js installed
 node -v 2>/dev/null || {
@@ -45,11 +46,13 @@ function run_full_fetch() {
         TEST_NAME=$TEST_NAME \
         SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
         OUT_DIR="./out" \
+        FILE_TIME_STR=$FILE_TIME_STR \
         k6 run ./scripts/script.js
     else
       TEST_NAME=$TEST_NAME \
         SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
         OUT_DIR="/out" \
+        FILE_TIME_STR=$FILE_TIME_STR \
         docker compose run k6 run /scripts/script.js
     fi
   done
@@ -88,12 +91,14 @@ function run_range_requests() {
           SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
           RANGE_SIZE=$RANGE_SIZE \
           OUT_DIR="./out" \
+          FILE_TIME_STR=$FILE_TIME_STR \
           k6 run ./scripts/script.js
       else
         TEST_NAME=$TEST_NAME \
           SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
           RANGE_SIZE=$RANGE_SIZE \
           OUT_DIR="/out" \
+          FILE_TIME_STR=$FILE_TIME_STR \
           docker compose run k6 run /scripts/script.js
       fi
     done
