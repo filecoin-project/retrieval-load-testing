@@ -9,10 +9,19 @@
 ##   * TEST_FETCH_CONCURRENCIES='X,Y,Z' to override the default concurrency levels for the full fetch tests
 ##   * TEST_RANGE_CONCURRENCIES='X,Y,Z' to override the default concurrency levels for the range requests tests
 ##   * TEST_RANGE_SIZES=='X,Y,Z' to override the default range sizes for the range requests tests
+##   * SKIP_CSV_OUT=1 to skip the CSV output generation
+##   * CSV_OUT_FILE='path/to/file.csv' to override the default CSV output file
 
 DEFAULT_FULL_FETCH_CONCURRENCIES=(1 8 16 32 64)
 DEFAULT_RANGE_CONCURRENCIES=(10 100 1000)
 DEFAULT_RANGE_SIZES=(1048576 10485760 104857600)
+CSV_OUT_FILE=${CSV_OUT_FILE:-out/results.csv}
+
+# Check that we have Node.js installed
+node -v 2>/dev/null || {
+    echo "'node' not found, CSV output will not be generated"
+    SKIP_CSV_OUT=1
+}
 
 function run_full_fetch() {
   TEST_NAME="full-fetch"
@@ -97,3 +106,6 @@ docker compose up -d influxdb grafana
 
 [[ -z "${SKIP_FULL_FETCH}" ]] && run_full_fetch
 [[ -z "${SKIP_RANGE_REQUESTS}" ]] && run_range_requests
+
+# Generate CSV output from the JSON files
+[[ -z "${SKIP_CSV_OUT}" ]] && node scripts/json2csv.mjs $CSV_OUT_FILE
