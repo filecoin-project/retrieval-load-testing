@@ -171,7 +171,7 @@ export function handleSummary(data) {
   }
 
   return {
-    'stdout': textSummary(data, { indent: '  ', enableColors: true }),
+    'stdout': textSummary(data, { indent: '  ', enableColors: true }) + '\n',
     [filepath]: JSON.stringify(data, null, 2),
   }
 }
