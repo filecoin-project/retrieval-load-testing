@@ -14,9 +14,18 @@ for CONCURRENCY in "${TEST_CONCURRENCIES[@]}"
 do
   if [[ -z "${USE_DOCKER_K6}" ]]; then
     source .env
-    K6_OUT=influxdb=http://127.0.0.1:8086/k6 BOOST_FETCH_URL=${BOOST_FETCH_URL} RAW_FETCH_URL=${RAW_FETCH_URL} SIMULTANEOUS_DOWNLOADS=$CONCURRENCY OUT_DIR="./out" k6 run ./scripts/script.js
+    K6_OUT=influxdb=http://127.0.0.1:8086/k6 \
+    BOOST_FETCH_URL=${BOOST_FETCH_URL} \
+    RAW_FETCH_URL=${RAW_FETCH_URL} \
+    TEST_NAME=$TEST_NAME \
+    SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
+    OUT_DIR="./out" \
+    k6 run ./scripts/script.js
   else
-    SIMULTANEOUS_DOWNLOADS=$CONCURRENCY OUT_DIR="/out" docker compose run k6 run /scripts/script.js
+    TEST_NAME=$TEST_NAME \
+    SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
+    OUT_DIR="/out" \
+    docker compose run k6 run /scripts/script.js
   fi
 done
 
@@ -32,9 +41,20 @@ do
   do
     if [[ -z "${USE_DOCKER_K6}" ]]; then
       source .env
-      K6_OUT=influxdb=http://127.0.0.1:8086/k6 BOOST_FETCH_URL=${BOOST_FETCH_URL} RAW_FETCH_URL=${RAW_FETCH_URL} SIMULTANEOUS_DOWNLOADS=$CONCURRENCY RANGE_SIZE=$RANGE_SIZE OUT_DIR="./out" k6 run ./scripts/script.js
+      K6_OUT=influxdb=http://127.0.0.1:8086/k6 \
+      BOOST_FETCH_URL=${BOOST_FETCH_URL} \
+      RAW_FETCH_URL=${RAW_FETCH_URL} \
+      TEST_NAME=$TEST_NAME \
+      SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
+      RANGE_SIZE=$RANGE_SIZE \
+      OUT_DIR="./out" \
+      k6 run ./scripts/script.js
     else
-      SIMULTANEOUS_DOWNLOADS=$CONCURRENCY RANGE_SIZE=$RANGE_SIZE OUT_DIR="/out" docker compose run k6 run /scripts/script.js
+      TEST_NAME=$TEST_NAME \
+      SIMULTANEOUS_DOWNLOADS=$CONCURRENCY \
+      RANGE_SIZE=$RANGE_SIZE \
+      OUT_DIR="/out" \
+      docker compose run k6 run /scripts/script.js
     fi
   done
 done
