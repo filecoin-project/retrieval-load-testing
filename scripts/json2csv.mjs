@@ -6,20 +6,18 @@ const header = [
   'Protocol',
   'Scenario',
   'Concurrency',
-  'Latency',
-  'Bandwidth',
-  'TTFB Avg (ms)',
-  'TTFB Min (ms)',
-  'TTFB Med (ms)',
-  'TTFB Max (ms)',
-  'TTFB P(90) (ms)',
-  'TTFB P(95) (ms)',
-  'MB/s Avg',
-  'MB/s Min',
-  'MB/s Med',
-  'MB/s Max',
-  'MB/s P(90)',
-  'MB/s P(95)',
+  'Latency Avg (ms)',
+  'Latency Min (ms)',
+  'Latency Med (ms)',
+  'Latency Max (ms)',
+  'Latency P(90) (ms)',
+  'Latency P(95) (ms)',
+  'Bandwidth (MB/s) Avg',
+  'Bandwidth (MB/s) Min',
+  'Bandwidth (MB/s) Med',
+  'Bandwidth (MB/s) Max',
+  'Bandwidth (MB/s) P(90)',
+  'Bandwidth (MB/s) P(95)',
   'Success Rate',
   'Missed WindowPost',
   'CPU',
@@ -51,8 +49,6 @@ function processInput (test, name, input) {
     'HTTPS', // Protocol
     test, // Scenario
     vus, // Concurrency
-    '', // Latency
-    '', // Bandwidth
     input.metrics.ttfb_raw.values.avg, // TTFB Avg (ms)
     input.metrics.ttfb_raw.values.min, // TTFB Min (ms)
     input.metrics.ttfb_raw.values.med, // TTFB Med (ms)
@@ -75,8 +71,6 @@ function processInput (test, name, input) {
     'Boost', // Protocol
     test, // Scenario
     vus, // VUs
-    '', // Latency
-    '', // Bandwidth
     input.metrics.ttfb_boost.values.avg, // TTFB Avg
     input.metrics.ttfb_boost.values.min, // TTFB Min
     input.metrics.ttfb_boost.values.med, // TTFB Med
