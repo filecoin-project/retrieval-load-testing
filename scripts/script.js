@@ -2,7 +2,7 @@
 
 import http from 'k6/http'
 import { SharedArray } from 'k6/data'
-import { Trend, Rate, Counter } from 'k6/metrics'
+import { Trend, Rate, Counter, Gauge } from 'k6/metrics'
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.3/index.js'
 
 const pieces = new SharedArray('pieces', function () {
@@ -21,6 +21,10 @@ const ttfbDelta = new Trend('ttfb_delta', true)
 const ttfbRaw = new Trend('ttfb_raw', true)
 const boostSuccess = new Rate('success_boost')
 const rawSuccess = new Rate('success_raw')
+const boostCPU = new Gauge('cpu_usage_boost')
+const rawCPU = new Gauge('cpu_usage_raw')
+const boostMemory = new Gauge('memory_usage_boost')
+const rawMemory = new Gauge('memory_usage_cpu')
 
 export const options = {
   scenarios: {
@@ -30,6 +34,11 @@ export const options = {
       iterations: 1,
       maxDuration: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`
     }
+  },
+  thresholds: {
+    // Trying to filter out teardown metrics
+    // Choose a threshold which will always pass
+    'http_req_duration{scenario:contacts}': ['max>=0']
   },
   discardResponseBodies: true
 }
@@ -53,6 +62,24 @@ export default function () {
   if (__ENV.RAW_FETCH_URL) {
     timeDelta.add(boostResponse.timings.duration - rawResponse.timings.duration)
     ttfbDelta.add(boostResponse.timings.waiting - rawResponse.timings.waiting)
+  }
+}
+
+export function teardown (data) {
+  if (__ENV.BOOST_PROMETHEUS_URL) {
+    // fetch cpu and memory metrics from url
+    // const response = http.get(__ENV.BOOST_PROMETHEUS_URL, {
+    //   responseType: 'text',
+    //   tags: {
+    //     name: 'teardown'
+    //   }
+    // })
+
+    // boostCPU.add(5)
+    // rawCPU.add(5)
+
+    // boostMemory.add(10)
+    // rawMemory.add(10)
   }
 }
 
