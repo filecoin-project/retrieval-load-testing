@@ -22,13 +22,21 @@ const ttfbRaw = new Trend('ttfb_raw', true)
 const boostSuccess = new Rate('success_boost')
 const rawSuccess = new Rate('success_raw')
 
+function timeoutFromEnv () {
+  const piecePercentage = __ENV.RANGE_SIZE
+    ? parseInt(__ENV.RANGE_SIZE, 10) / (32 * 1000000000)
+    : 1
+  const vus = parseInt(__ENV.SIMULTANEOUS_DOWNLOADS)
+  return `${Math.max(30, piecePercentage * vus * 60)}m`
+}
+
 export const options = {
   scenarios: {
     contacts: {
       executor: 'per-vu-iterations',
       vus: __ENV.SIMULTANEOUS_DOWNLOADS,
       iterations: 1,
-      maxDuration: `${__ENV.SIMULTANEOUS_DOWNLOADS}h`
+      maxDuration: timeoutFromEnv()
     }
   },
   discardResponseBodies: true
@@ -125,7 +133,7 @@ function fetchFromRawUrl (piece) {
 function get (url, params = {}) {
   // Default timeout
   if (__ENV.SIMULTANEOUS_DOWNLOADS) {
-    params.timeout = `${__ENV.SIMULTANEOUS_DOWNLOADS}h`
+    params.timeout = timeoutFromEnv()
   }
 
   // Get random range offset and create Range header
