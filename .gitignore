@@ -4,3 +4,4 @@
 Dockerfile.custom
 *.crt
 /out
+/results
