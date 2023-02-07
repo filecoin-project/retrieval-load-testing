@@ -158,7 +158,7 @@ async function run () {
 
   // transform the data into CSV
   const contents = data.map(toCSV).join('\n') + '\n'
-  const out = process.argv[2] || new URL('../out/results.csv', import.meta.url).pathname
+  const out = process.argv[2] || new URL('../results/results.csv', import.meta.url).pathname
   await fs.writeFile(out, contents, 'utf8')
   console.log('Wrote stats CSV to', out)
 }
