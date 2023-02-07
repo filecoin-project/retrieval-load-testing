@@ -16,7 +16,7 @@ DEFAULT_FULL_FETCH_CONCURRENCIES=(1 8 16 32 64)
 DEFAULT_RANGE_CONCURRENCIES=(10 100 1000)
 DEFAULT_RANGE_SIZES=(1048576 10485760 104857600)
 FILE_TIME_STR=$(date -u +'%Y-%m-%dT%H:%M')
-CSV_OUT_FILE=${CSV_OUT_FILE:-out/results_${FILE_TIME_STR}.csv}
+CSV_OUT_FILE=${CSV_OUT_FILE:-results/results_${FILE_TIME_STR}.csv}
 
 # Check that we have Node.js installed
 node -v 2>/dev/null || {
@@ -107,6 +107,7 @@ function run_range_requests() {
 
 rm -rf out
 mkdir -p out
+mkdir -p results
 docker compose up -d influxdb grafana
 
 [[ -z "${SKIP_FULL_FETCH}" ]] && run_full_fetch
